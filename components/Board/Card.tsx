@@ -5,10 +5,11 @@ import { getItemStyle, ListItems } from "./utils";
 interface CardProps {
   provided: DraggableProvided;
   snapshot: DraggableStateSnapshot;
-  columnId: number;
+  columnId: string;
   rowId: number;
   item: ListItems;
-  cardRemoveHandle: (columnId: number, rowId: number) => void;
+  cardRemoveHandle: (columnId: string, rowId: number) => void;
+  name: string;
 }
 export const Card = ({
   provided,

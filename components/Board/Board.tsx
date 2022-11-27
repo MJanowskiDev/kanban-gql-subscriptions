@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 import {
   DragDropContext,
   Droppable,
@@ -7,16 +8,9 @@ import {
   DraggableLocation,
 } from "react-beautiful-dnd";
 
-import { ListItems, reorder, getListStyle } from "./utils";
+import { ListItems, reorder, getListStyle, ColumnsType } from "./utils";
 import { Card } from "./Card";
 import { Column } from "./Column";
-
-// fake data generator
-const getItems = (count: number, offset = 0) =>
-  Array.from({ length: count }, (v, k) => k).map((k) => ({
-    id: `item-${k + offset}-${new Date().getTime()}`,
-    content: `item ${k + offset}`,
-  }));
 
 /**
  * Moves an item from one list to another list.
@@ -47,7 +41,9 @@ const move = (
 };
 
 export const Board = () => {
-  const [state, setState] = useState<ListItems[][]>([]);
+  const [columns, setColumns] = useState<ColumnsType[]>([]);
+
+  console.log(columns);
 
   const onDragEnd = (result: DropResult) => {
     const { source, destination } = result;
@@ -60,38 +56,56 @@ export const Board = () => {
     const dInd = +destination.droppableId;
 
     if (sInd === dInd) {
-      const items = reorder(state[sInd], source.index, destination.index);
-      const newState = [...state];
-      newState[sInd] = items;
-      setState(newState);
+      const items = reorder(
+        columns[sInd].cards,
+        source.index,
+        destination.index
+      );
+      const newState = [...columns];
+      newState[sInd].cards = items;
+      setColumns(newState);
     } else {
-      const result = move(state[sInd], state[dInd], source, destination);
-      const newState = [...state];
-      newState[sInd] = result[sInd];
-      newState[dInd] = result[dInd];
+      const result = move(
+        columns[sInd].cards,
+        columns[dInd].cards,
+        source,
+        destination
+      );
+      const newState = [...columns];
+      newState[sInd].cards = result[sInd];
+      newState[dInd].cards = result[dInd];
 
-      setState(newState);
+      setColumns(newState);
     }
   };
 
-  const handleCardRemove = (columnIndex: number, rowIndex: number) => {
-    const newState = [...state];
-    newState[columnIndex].splice(rowIndex, 1);
-    setState(newState);
+  const handleCardRemove = (columnId: string, rowIndex: number) => {
+    console.log(rowIndex, columnId);
+    const columnsCopy = [...columns];
+    const columnIndex = columnsCopy.findIndex((col) => col.id === columnId);
+
+    columnsCopy[columnIndex].cards.splice(rowIndex, 1);
+
+    setColumns(columnsCopy);
   };
 
-  const handleAddItem = (columnId: number) => {
-    setState((prev) => {
-      const array = [...prev];
-      if (array[columnId]) {
-        array[columnId] = array[columnId].concat(getItems(1));
-      }
-      return array;
-    });
+  const handleAddItem = (columnId: string) => {
+    const columnsCopy = [...columns];
+    const columnIndex = columnsCopy.findIndex((col) => col.id === columnId);
+    if (typeof columnIndex !== undefined) {
+      columnsCopy[columnIndex].cards = [
+        ...columnsCopy[columnIndex].cards,
+        { id: uuidv4(), content: uuidv4() },
+      ];
+    }
+    setColumns(columnsCopy);
   };
 
   const handleAddColumn = () => {
-    setState((prev) => [...prev, []]);
+    setColumns((prev) => [
+      ...prev,
+      { id: uuidv4(), name: uuidv4().slice(0, 5), cards: [] },
+    ]);
   };
 
   return (
@@ -99,23 +113,21 @@ export const Board = () => {
       <button type="button" onClick={handleAddColumn}>
         Add new column
       </button>
-      <button type="button" onClick={() => handleAddItem(0)}>
-        Add new item
-      </button>
 
       <div style={{ display: "flex" }}>
         <DragDropContext onDragEnd={onDragEnd}>
-          {state.map((el, ind) => (
+          {columns.map((el, ind) => (
             <Droppable key={ind} droppableId={`${ind}`}>
               {(provided, snapshot) => (
                 <Column
-                  id={ind}
+                  id={el.id}
                   handleAddItem={handleAddItem}
                   divRef={provided.innerRef}
                   style={getListStyle(snapshot.isDraggingOver)}
                   droppableProps={{ ...provided.droppableProps }}
+                  name={el.name}
                 >
-                  {el.map((item, index) => (
+                  {el.cards.map((item, index) => (
                     <Draggable
                       key={item.id}
                       draggableId={item.id}
@@ -126,9 +138,10 @@ export const Board = () => {
                           provided={provided}
                           snapshot={snapshot}
                           cardRemoveHandle={handleCardRemove}
-                          columnId={ind}
+                          columnId={el.id}
                           rowId={index}
                           item={item}
+                          name={el.name}
                         />
                       )}
                     </Draggable>

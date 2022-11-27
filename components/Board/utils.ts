@@ -1,11 +1,4 @@
-import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-  DraggingStyle,
-  DropResult,
-  DraggableProvidedDraggableProps,
-} from "react-beautiful-dnd";
+import { DraggableProvidedDraggableProps } from "react-beautiful-dnd";
 
 import { CSSProperties, SetStateAction } from "react";
 
@@ -14,6 +7,11 @@ export interface ListItems {
   content: string;
 }
 
+export interface ColumnsType {
+  id: string;
+  name: string;
+  cards: ListItems[];
+}
 const GRID = 8;
 
 export const getItemStyle = (

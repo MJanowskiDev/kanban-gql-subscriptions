@@ -6,8 +6,9 @@ interface ColumnProps {
   style: CSSProperties;
   droppableProps: DroppableProvidedProps;
   children: ReactNode;
-  id: number;
-  handleAddItem: (columnId: number) => void;
+  id: string;
+  handleAddItem: (columnId: string) => void;
+  name: string;
 }
 
 export const Column = ({
@@ -16,18 +17,24 @@ export const Column = ({
   droppableProps,
   children,
   id,
+  name,
   handleAddItem,
 }: ColumnProps) => {
   return (
-    <div ref={divRef} style={style} {...droppableProps}>
-      {children}
-      <button
-        onClick={() => {
-          handleAddItem(id);
-        }}
-      >
-        Add
-      </button>
+    <div>
+      <h1>{name}</h1>
+      <div ref={divRef} style={style} {...droppableProps}>
+        {children}
+      </div>
+      <div>
+        <button
+          onClick={() => {
+            handleAddItem(id);
+          }}
+        >
+          Add
+        </button>
+      </div>
     </div>
   );
 };
