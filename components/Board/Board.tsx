@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import {
   DragDropContext,
@@ -8,7 +8,13 @@ import {
   DraggableLocation,
 } from "react-beautiful-dnd";
 
-import { ListItems, reorder, getListStyle, ColumnsType } from "./utils";
+import {
+  ListItems,
+  reorder,
+  getListStyle,
+  ColumnsType,
+  dummyState,
+} from "./utils";
 import { Card } from "./Card";
 import { Column } from "./Column";
 
@@ -43,7 +49,9 @@ const move = (
 export const Board = () => {
   const [columns, setColumns] = useState<ColumnsType[]>([]);
 
-  console.log(columns);
+  useEffect(() => {
+    setColumns(dummyState);
+  }, []);
 
   const onDragEnd = (result: DropResult) => {
     const { source, destination } = result;
@@ -80,7 +88,6 @@ export const Board = () => {
   };
 
   const handleCardRemove = (columnId: string, rowIndex: number) => {
-    console.log(rowIndex, columnId);
     const columnsCopy = [...columns];
     const columnIndex = columnsCopy.findIndex((col) => col.id === columnId);
 
