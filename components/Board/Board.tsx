@@ -7,7 +7,7 @@ import {
   DraggableLocation,
 } from "react-beautiful-dnd";
 
-import { ListItems, getItemStyle, reorder, getListStyle } from "./utils";
+import { ListItems, reorder, getListStyle } from "./utils";
 import { Card } from "./Card";
 import { Column } from "./Column";
 
@@ -74,28 +74,32 @@ export const Board = () => {
     }
   };
 
-  const cardRemove = (columnIndex: number, rowIndex: number) => {
+  const handleCardRemove = (columnIndex: number, rowIndex: number) => {
     const newState = [...state];
     newState[columnIndex].splice(rowIndex, 1);
     setState(newState);
   };
 
+  const handleAddItem = (columnId: number) => {
+    setState((prev) => {
+      const array = [...prev];
+      if (array[columnId]) {
+        array[columnId] = array[columnId].concat(getItems(1));
+      }
+      return array;
+    });
+  };
+
+  const handleAddColumn = () => {
+    setState((prev) => [...prev, []]);
+  };
+
   return (
     <div>
-      <button
-        type="button"
-        onClick={() => {
-          setState([...state, []]);
-        }}
-      >
-        Add new group
+      <button type="button" onClick={handleAddColumn}>
+        Add new column
       </button>
-      <button
-        type="button"
-        onClick={() => {
-          setState([...state, getItems(1)]);
-        }}
-      >
+      <button type="button" onClick={() => handleAddItem(0)}>
         Add new item
       </button>
 
@@ -105,6 +109,8 @@ export const Board = () => {
             <Droppable key={ind} droppableId={`${ind}`}>
               {(provided, snapshot) => (
                 <Column
+                  id={ind}
+                  handleAddItem={handleAddItem}
                   divRef={provided.innerRef}
                   style={getListStyle(snapshot.isDraggingOver)}
                   droppableProps={{ ...provided.droppableProps }}
@@ -119,7 +125,7 @@ export const Board = () => {
                         <Card
                           provided={provided}
                           snapshot={snapshot}
-                          cardRemoveHandle={cardRemove}
+                          cardRemoveHandle={handleCardRemove}
                           columnId={ind}
                           rowId={index}
                           item={item}
