@@ -8,6 +8,8 @@ import {
 } from "react-beautiful-dnd";
 
 import { ListItems, getItemStyle, reorder, getListStyle } from "./utils";
+import { Card } from "./Card";
+import { Column } from "./Column";
 
 // fake data generator
 const getItems = (count: number, offset = 0) =>
@@ -41,15 +43,13 @@ const move = (
   result[x] = sourceClone;
   result[y] = destClone;
 
-  console.log("Droppable source", removed);
-
   return result;
 };
 
 export const Board = () => {
   const [state, setState] = useState<ListItems[][]>([]);
 
-  function onDragEnd(result: DropResult) {
+  const onDragEnd = (result: DropResult) => {
     const { source, destination } = result;
 
     // dropped outside the list
@@ -72,7 +72,13 @@ export const Board = () => {
 
       setState(newState);
     }
-  }
+  };
+
+  const cardRemove = (columnIndex: number, rowIndex: number) => {
+    const newState = [...state];
+    newState[columnIndex].splice(rowIndex, 1);
+    setState(newState);
+  };
 
   return (
     <div>
@@ -92,15 +98,16 @@ export const Board = () => {
       >
         Add new item
       </button>
+
       <div style={{ display: "flex" }}>
         <DragDropContext onDragEnd={onDragEnd}>
           {state.map((el, ind) => (
             <Droppable key={ind} droppableId={`${ind}`}>
               {(provided, snapshot) => (
-                <div
-                  ref={provided.innerRef}
+                <Column
+                  divRef={provided.innerRef}
                   style={getListStyle(snapshot.isDraggingOver)}
-                  {...provided.droppableProps}
+                  droppableProps={{ ...provided.droppableProps }}
                 >
                   {el.map((item, index) => (
                     <Draggable
@@ -109,41 +116,19 @@ export const Board = () => {
                       index={index}
                     >
                       {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          style={getItemStyle(
-                            snapshot.isDragging,
-                            provided.draggableProps.style
-                          )}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-around",
-                            }}
-                          >
-                            {item.content}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newState = [...state];
-                                newState[ind].splice(index, 1);
-                                setState(
-                                  newState.filter((group) => group.length)
-                                );
-                              }}
-                            >
-                              delete
-                            </button>
-                          </div>
-                        </div>
+                        <Card
+                          provided={provided}
+                          snapshot={snapshot}
+                          cardRemoveHandle={cardRemove}
+                          columnId={ind}
+                          rowId={index}
+                          item={item}
+                        />
                       )}
                     </Draggable>
                   ))}
                   {provided.placeholder}
-                </div>
+                </Column>
               )}
             </Droppable>
           ))}
