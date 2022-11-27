@@ -5,17 +5,13 @@ import { getItemStyle, ListItems } from "./utils";
 interface CardProps {
   provided: DraggableProvided;
   snapshot: DraggableStateSnapshot;
-  columnId: string;
-  rowId: number;
-  item: ListItems;
+  item: any;
   cardRemoveHandle: (cardId: string) => void;
   name: string;
 }
 export const Card = ({
   provided,
   snapshot,
-  columnId,
-  rowId,
   item,
   cardRemoveHandle,
 }: CardProps) => {
@@ -41,6 +37,7 @@ export const Card = ({
         >
           x
         </button>
+        <small>{item.order}</small>
       </div>
     </div>
   );

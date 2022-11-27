@@ -999,6 +999,7 @@ export type EditColumnMutation = { __typename?: 'mutation_root', update_columns?
 export type CreateCardMutationVariables = Exact<{
   content: Scalars['String'];
   columnId: Scalars['uuid'];
+  order: Scalars['float8'];
 }>;
 
 
@@ -1019,9 +1020,18 @@ export type EditCardContentMutationVariables = Exact<{
 
 export type EditCardContentMutation = { __typename?: 'mutation_root', update_card?: { __typename?: 'card_mutation_response', affected_rows: number } | null };
 
+export type EditCardOrderMutationVariables = Exact<{
+  id: Scalars['uuid'];
+  order: Scalars['float8'];
+}>;
+
+
+export type EditCardOrderMutation = { __typename?: 'mutation_root', update_card?: { __typename?: 'card_mutation_response', affected_rows: number } | null };
+
 export type EditCardColumnMutationVariables = Exact<{
   id: Scalars['uuid'];
   columnId: Scalars['uuid'];
+  order: Scalars['float8'];
 }>;
 
 
@@ -1134,8 +1144,8 @@ export type EditColumnMutationHookResult = ReturnType<typeof useEditColumnMutati
 export type EditColumnMutationResult = Apollo.MutationResult<EditColumnMutation>;
 export type EditColumnMutationOptions = Apollo.BaseMutationOptions<EditColumnMutation, EditColumnMutationVariables>;
 export const CreateCardDocument = gql`
-    mutation CreateCard($content: String!, $columnId: uuid!) {
-  insert_card_one(object: {content: $content, columnId: $columnId}) {
+    mutation CreateCard($content: String!, $columnId: uuid!, $order: float8!) {
+  insert_card_one(object: {content: $content, columnId: $columnId, order: $order}) {
     id
   }
 }
@@ -1157,6 +1167,7 @@ export type CreateCardMutationFn = Apollo.MutationFunction<CreateCardMutation, C
  *   variables: {
  *      content: // value for 'content'
  *      columnId: // value for 'columnId'
+ *      order: // value for 'order'
  *   },
  * });
  */
@@ -1234,9 +1245,43 @@ export function useEditCardContentMutation(baseOptions?: Apollo.MutationHookOpti
 export type EditCardContentMutationHookResult = ReturnType<typeof useEditCardContentMutation>;
 export type EditCardContentMutationResult = Apollo.MutationResult<EditCardContentMutation>;
 export type EditCardContentMutationOptions = Apollo.BaseMutationOptions<EditCardContentMutation, EditCardContentMutationVariables>;
+export const EditCardOrderDocument = gql`
+    mutation EditCardOrder($id: uuid!, $order: float8!) {
+  update_card(where: {id: {_eq: $id}}, _set: {order: $order}) {
+    affected_rows
+  }
+}
+    `;
+export type EditCardOrderMutationFn = Apollo.MutationFunction<EditCardOrderMutation, EditCardOrderMutationVariables>;
+
+/**
+ * __useEditCardOrderMutation__
+ *
+ * To run a mutation, you first call `useEditCardOrderMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useEditCardOrderMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [editCardOrderMutation, { data, loading, error }] = useEditCardOrderMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      order: // value for 'order'
+ *   },
+ * });
+ */
+export function useEditCardOrderMutation(baseOptions?: Apollo.MutationHookOptions<EditCardOrderMutation, EditCardOrderMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<EditCardOrderMutation, EditCardOrderMutationVariables>(EditCardOrderDocument, options);
+      }
+export type EditCardOrderMutationHookResult = ReturnType<typeof useEditCardOrderMutation>;
+export type EditCardOrderMutationResult = Apollo.MutationResult<EditCardOrderMutation>;
+export type EditCardOrderMutationOptions = Apollo.BaseMutationOptions<EditCardOrderMutation, EditCardOrderMutationVariables>;
 export const EditCardColumnDocument = gql`
-    mutation EditCardColumn($id: uuid!, $columnId: uuid!) {
-  update_card(where: {id: {_eq: $id}}, _set: {columnId: $columnId}) {
+    mutation EditCardColumn($id: uuid!, $columnId: uuid!, $order: float8!) {
+  update_card(where: {id: {_eq: $id}}, _set: {columnId: $columnId, order: $order}) {
     affected_rows
   }
 }
@@ -1258,6 +1303,7 @@ export type EditCardColumnMutationFn = Apollo.MutationFunction<EditCardColumnMut
  *   variables: {
  *      id: // value for 'id'
  *      columnId: // value for 'columnId'
+ *      order: // value for 'order'
  *   },
  * });
  */
@@ -1273,7 +1319,7 @@ export const BoardSubscriptionDocument = gql`
   columns {
     name
     id
-    cards(order_by: {order: desc}) {
+    cards(order_by: {order: asc}) {
       id
       content
       order

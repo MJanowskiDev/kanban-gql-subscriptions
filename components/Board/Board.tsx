@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import {
   DragDropContext,
@@ -7,7 +6,12 @@ import {
   DropResult,
 } from "react-beautiful-dnd";
 
-import { reorder, getListStyle, ColumnsType } from "./utils";
+import {
+  getListStyle,
+  calculateOrder,
+  calculateCardOrderInColum,
+  ORDER_THRESHOLD_NEW_VALUE,
+} from "./utils";
 import { Card } from "./Card";
 import { Column } from "./Column";
 import {
@@ -17,13 +21,12 @@ import {
   useCreateColumnMutation,
   useDeleteCardMutation,
   useEditCardColumnMutation,
+  useEditCardOrderMutation,
 } from "../../graphql/generated/gql-types";
 
 import { useSubscription } from "@apollo/client";
 
 export const Board = () => {
-  const [columns, setColumns] = useState<ColumnsType[]>([]);
-
   const { loading, data, error } =
     useSubscription<BoardSubscriptionSubscription>(BoardSubscriptionDocument);
 
@@ -31,14 +34,9 @@ export const Board = () => {
   const [createCard, createCardResult] = useCreateCardMutation();
   const [removeCard, removeCardResult] = useDeleteCardMutation();
   const [editCardColumn, editCardColumnResult] = useEditCardColumnMutation();
+  const [editCardOrder, editCardOrderResult] = useEditCardOrderMutation();
 
-  useEffect(() => {
-    if (data) {
-      setColumns(data.columns);
-    }
-  }, [data]);
-
-  const onDragEnd = async (result: DropResult) => {
+  const onDragEnd = (result: DropResult) => {
     const { source, destination } = result;
 
     // dropped outside the list
@@ -49,21 +47,31 @@ export const Board = () => {
     const dInd = +destination.droppableId;
 
     if (sInd === dInd) {
-      const items = reorder(
-        columns[sInd].cards,
-        source.index,
-        destination.index
-      );
-      const newState = [...columns];
-      newState[sInd].cards = items;
-      setColumns(newState);
+      const cardsList = data?.columns[sInd].cards.slice(0);
+      const cardOrder = data?.columns[sInd].cards[destination.index].order;
+
+      if (cardsList) {
+        editCardOrder({
+          variables: {
+            id: data?.columns[sInd].cards[source.index].id,
+            order: calculateOrder(cardsList, destination.index, cardOrder),
+          },
+        });
+      }
     } else {
-      await editCardColumn({
-        variables: {
-          columnId: columns[dInd].id,
-          id: columns[sInd].cards[source.index].id,
-        },
-      });
+      const cardsList = data?.columns[dInd].cards.slice(0);
+
+      const columnId = data?.columns[dInd].id;
+      const cardId = data?.columns[sInd].cards[source.index]?.id;
+      if (cardsList && columnId && cardId) {
+        editCardColumn({
+          variables: {
+            columnId: columnId,
+            id: cardId,
+            order: calculateCardOrderInColum(cardsList, destination.index),
+          },
+        });
+      }
     }
   };
 
@@ -72,7 +80,19 @@ export const Board = () => {
   };
 
   const handleAddItem = (columnId: string) => {
-    createCard({ variables: { columnId: columnId, content: uuidv4() } });
+    const cards = data?.columns.find((col) => col.id === columnId)?.cards;
+    let maxOrder = 0;
+    if (cards?.length) {
+      const sortedCardsByOrder = cards.reduce((prev, current) => {
+        return prev.order > current.order ? prev : current;
+      });
+
+      maxOrder = sortedCardsByOrder.order + ORDER_THRESHOLD_NEW_VALUE;
+    }
+
+    createCard({
+      variables: { columnId: columnId, content: uuidv4(), order: maxOrder },
+    });
   };
 
   const handleAddColumn = () => {
@@ -87,7 +107,7 @@ export const Board = () => {
 
       <div style={{ display: "flex" }}>
         <DragDropContext onDragEnd={onDragEnd}>
-          {columns.map((el, ind) => (
+          {data?.columns.map((el, ind) => (
             <Droppable key={ind} droppableId={`${ind}`}>
               {(provided, snapshot) => (
                 <Column
@@ -109,8 +129,6 @@ export const Board = () => {
                           provided={provided}
                           snapshot={snapshot}
                           cardRemoveHandle={handleCardRemove}
-                          columnId={el.id}
-                          rowId={index}
                           item={item}
                           name={el.name}
                         />
