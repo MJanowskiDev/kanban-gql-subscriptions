@@ -1,0 +1,10 @@
+subscription BoardSubscription {
+  columns {
+    name
+    id
+    cards {
+      id
+      content
+    }
+  }
+}

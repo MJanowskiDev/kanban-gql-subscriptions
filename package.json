@@ -6,9 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "codegen": "graphql-codegen --require dotenv/config --config ./codegen.ts dotenv_config_path=./.env.local"
   },
   "dependencies": {
+    "@apollo/client": "^3.7.1",
+    "@graphql-tools/schema": "^9.0.10",
     "@types/node": "18.11.9",
     "@types/react": "18.0.25",
     "@types/react-beautiful-dnd": "^13.1.2",
@@ -16,11 +19,21 @@
     "@types/uuid": "^8.3.4",
     "eslint": "8.28.0",
     "eslint-config-next": "13.0.5",
+    "graphql": "^16.6.0",
+    "graphql-ws": "^5.11.2",
+    "net": "^1.0.2",
     "next": "13.0.5",
     "react": "18.2.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "18.2.0",
+    "tls": "^0.0.1",
     "typescript": "4.9.3",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "ws": "^8.11.0"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^2.14.1",
+    "@graphql-codegen/client-preset": "^1.1.5",
+    "@graphql-codegen/typescript-react-apollo": "^3.3.7"
   }
 }
