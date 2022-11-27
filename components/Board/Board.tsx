@@ -17,6 +17,12 @@ import {
 } from "./utils";
 import { Card } from "./Card";
 import { Column } from "./Column";
+import {
+  BoardSubscriptionDocument,
+  BoardSubscriptionSubscription,
+} from "../../graphql/generated/gql-types";
+
+import { useSubscription } from "@apollo/client";
 
 /**
  * Moves an item from one list to another list.
@@ -48,6 +54,9 @@ const move = (
 
 export const Board = () => {
   const [columns, setColumns] = useState<ColumnsType[]>([]);
+
+  const { loading, data, error } =
+    useSubscription<BoardSubscriptionSubscription>(BoardSubscriptionDocument);
 
   useEffect(() => {
     setColumns(dummyState);
