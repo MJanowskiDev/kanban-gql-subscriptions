@@ -91,21 +91,17 @@ export const Board = () => {
     }
 
     createCard({
-      variables: { columnId: columnId, content: uuidv4(), order: maxOrder },
+      variables: { columnId: columnId, content: "", order: maxOrder },
     });
   };
 
   const handleAddColumn = () => {
-    createColumn({ variables: { name: uuidv4().slice(0, 5) } });
+    createColumn({ variables: { name: "Column" } });
   };
 
   return (
     <div>
-      <button type="button" onClick={handleAddColumn}>
-        Add new column
-      </button>
-
-      <div style={{ display: "flex" }}>
+      <div style={{ display: "flex", overflow: "auto", width: "100vw" }}>
         <DragDropContext onDragEnd={onDragEnd}>
           {data?.columns.map((el, ind) => (
             <Droppable key={ind} droppableId={`${ind}`}>
@@ -142,6 +138,10 @@ export const Board = () => {
           ))}
         </DragDropContext>
       </div>
+      <br></br>
+      <button type="button" onClick={handleAddColumn}>
+        Add new column
+      </button>
     </div>
   );
 };
