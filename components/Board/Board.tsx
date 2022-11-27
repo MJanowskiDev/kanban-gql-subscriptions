@@ -5,52 +5,21 @@ import {
   Droppable,
   Draggable,
   DropResult,
-  DraggableLocation,
 } from "react-beautiful-dnd";
 
-import {
-  ListItems,
-  reorder,
-  getListStyle,
-  ColumnsType,
-  dummyState,
-} from "./utils";
+import { reorder, getListStyle, ColumnsType } from "./utils";
 import { Card } from "./Card";
 import { Column } from "./Column";
 import {
   BoardSubscriptionDocument,
   BoardSubscriptionSubscription,
+  useCreateCardMutation,
+  useCreateColumnMutation,
+  useDeleteCardMutation,
+  useEditCardColumnMutation,
 } from "../../graphql/generated/gql-types";
 
 import { useSubscription } from "@apollo/client";
-
-/**
- * Moves an item from one list to another list.
- */
-const move = (
-  source: ListItems[],
-  destination: ListItems[],
-  droppableSource: DraggableLocation,
-  droppableDestination: DraggableLocation
-): ListItems[][] => {
-  const sourceClone = Array.from(source);
-  const destClone = Array.from(destination);
-  const [removed] = sourceClone.splice(droppableSource.index, 1);
-
-  const result: ListItems[][] = [];
-
-  if (droppableDestination && droppableSource) {
-    destClone.splice(droppableDestination.index, 0, removed);
-  }
-
-  const x = Number(droppableSource.droppableId);
-  const y = Number(droppableDestination.droppableId);
-
-  result[x] = sourceClone;
-  result[y] = destClone;
-
-  return result;
-};
 
 export const Board = () => {
   const [columns, setColumns] = useState<ColumnsType[]>([]);
@@ -58,11 +27,18 @@ export const Board = () => {
   const { loading, data, error } =
     useSubscription<BoardSubscriptionSubscription>(BoardSubscriptionDocument);
 
-  useEffect(() => {
-    setColumns(dummyState);
-  }, []);
+  const [createColumn, createColumnResult] = useCreateColumnMutation();
+  const [createCard, createCardResult] = useCreateCardMutation();
+  const [removeCard, removeCardResult] = useDeleteCardMutation();
+  const [editCardColumn, editCardColumnResult] = useEditCardColumnMutation();
 
-  const onDragEnd = (result: DropResult) => {
+  useEffect(() => {
+    if (data) {
+      setColumns(data.columns);
+    }
+  }, [data]);
+
+  const onDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
 
     // dropped outside the list
@@ -82,46 +58,25 @@ export const Board = () => {
       newState[sInd].cards = items;
       setColumns(newState);
     } else {
-      const result = move(
-        columns[sInd].cards,
-        columns[dInd].cards,
-        source,
-        destination
-      );
-      const newState = [...columns];
-      newState[sInd].cards = result[sInd];
-      newState[dInd].cards = result[dInd];
-
-      setColumns(newState);
+      await editCardColumn({
+        variables: {
+          columnId: columns[dInd].id,
+          id: columns[sInd].cards[source.index].id,
+        },
+      });
     }
   };
 
-  const handleCardRemove = (columnId: string, rowIndex: number) => {
-    const columnsCopy = [...columns];
-    const columnIndex = columnsCopy.findIndex((col) => col.id === columnId);
-
-    columnsCopy[columnIndex].cards.splice(rowIndex, 1);
-
-    setColumns(columnsCopy);
+  const handleCardRemove = (cardId: string) => {
+    removeCard({ variables: { id: cardId } });
   };
 
   const handleAddItem = (columnId: string) => {
-    const columnsCopy = [...columns];
-    const columnIndex = columnsCopy.findIndex((col) => col.id === columnId);
-    if (typeof columnIndex !== undefined) {
-      columnsCopy[columnIndex].cards = [
-        ...columnsCopy[columnIndex].cards,
-        { id: uuidv4(), content: uuidv4() },
-      ];
-    }
-    setColumns(columnsCopy);
+    createCard({ variables: { columnId: columnId, content: uuidv4() } });
   };
 
   const handleAddColumn = () => {
-    setColumns((prev) => [
-      ...prev,
-      { id: uuidv4(), name: uuidv4().slice(0, 5), cards: [] },
-    ]);
+    createColumn({ variables: { name: uuidv4().slice(0, 5) } });
   };
 
   return (

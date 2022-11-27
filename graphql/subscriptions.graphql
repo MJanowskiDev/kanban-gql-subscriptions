@@ -2,9 +2,10 @@ subscription BoardSubscription {
   columns {
     name
     id
-    cards {
+    cards(order_by: { order: desc }) {
       id
       content
+      order
     }
   }
 }

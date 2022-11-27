@@ -1,0 +1,41 @@
+mutation CreateColumn($name: String!) {
+  insert_columns_one(object: { name: $name }) {
+    id
+  }
+}
+
+mutation RemoveColumn($id: uuid!) {
+  delete_columns(where: { id: { _eq: $id } }) {
+    affected_rows
+  }
+}
+
+mutation EditColumn($id: uuid!, $name: String) {
+  update_columns(where: { id: { _eq: $id } }, _set: { name: $name }) {
+    affected_rows
+  }
+}
+
+mutation CreateCard($content: String!, $columnId: uuid!) {
+  insert_card_one(object: { content: $content, columnId: $columnId }) {
+    id
+  }
+}
+
+mutation DeleteCard($id: uuid!) {
+  delete_card(where: { id: { _eq: $id } }) {
+    affected_rows
+  }
+}
+
+mutation EditCardContent($id: uuid!, $content: String!) {
+  update_card(where: { id: { _eq: $id } }, _set: { content: $content }) {
+    affected_rows
+  }
+}
+
+mutation EditCardColumn($id: uuid!, $columnId: uuid!) {
+  update_card(where: { id: { _eq: $id } }, _set: { columnId: $columnId }) {
+    affected_rows
+  }
+}

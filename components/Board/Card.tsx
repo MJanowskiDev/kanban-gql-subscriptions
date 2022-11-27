@@ -8,7 +8,7 @@ interface CardProps {
   columnId: string;
   rowId: number;
   item: ListItems;
-  cardRemoveHandle: (columnId: string, rowId: number) => void;
+  cardRemoveHandle: (cardId: string) => void;
   name: string;
 }
 export const Card = ({
@@ -36,7 +36,7 @@ export const Card = ({
         <button
           type="button"
           onClick={() => {
-            cardRemoveHandle(columnId, rowId);
+            cardRemoveHandle(item.id);
           }}
         >
           x

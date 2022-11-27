@@ -1,6 +1,6 @@
 import { DraggableProvidedDraggableProps } from "react-beautiful-dnd";
 
-import { CSSProperties, SetStateAction } from "react";
+import { CSSProperties } from "react";
 
 export interface ListItems {
   id: string;
@@ -46,35 +46,3 @@ export const reorder = (
 
   return result;
 };
-
-export const dummyState = [
-  {
-    name: "First column",
-    id: "c963631d-a04d-4a29-9455-ca89440e68f8",
-    cards: [
-      {
-        id: "d9903f13-2380-4666-8531-0eecdd9cf67e",
-        content: "First card",
-      },
-      {
-        id: "6885abfc-8e8f-466e-94bf-a7450d58c7b4",
-        content: "Second card",
-      },
-    ],
-  },
-  {
-    name: "Second column",
-    id: "a8e65bc9-9ad1-499b-9a4f-bdcf5293a448",
-    cards: [
-      {
-        id: "d4418ca4-6070-4204-8c04-52e6bbc1ba7b",
-        content: "Third card",
-      },
-    ],
-  },
-  {
-    name: "Third column",
-    id: "410d49f0-88d9-4704-b5c7-efd4587fd7ae",
-    cards: [],
-  },
-];
