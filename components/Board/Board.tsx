@@ -35,7 +35,56 @@ export const Board = () => {
   const [createColumn, createColumnResult] = useCreateColumnMutation();
   const [createCard, createCardResult] = useCreateCardMutation();
   const [removeCard, removeCardResult] = useDeleteCardMutation();
-  const [editCardColumn, editCardColumnResult] = useEditCardColumnMutation();
+  const [editCardColumn, editCardColumnResult] = useEditCardColumnMutation({
+    update(cache, result) {
+      const originalData = cache.readQuery<BoardSubscriptionSubscription>({
+        query: BoardSubscriptionQueryDocument,
+      });
+
+      if (
+        originalData?.columns &&
+        result.data?.update_card &&
+        result.data.update_card?.returning
+      ) {
+        const columns = [...originalData?.columns];
+        const updatedCard = result.data?.update_card.returning[0];
+        const { columnId, order, id, content } = updatedCard;
+        console.log(order, "order");
+
+        const sourceColumnId = columns.findIndex((column) =>
+          column.cards.find((card) => card.id === id)
+        );
+
+        const destinationColumnId = columns.findIndex(
+          (column) => column.id == columnId
+        );
+
+        const res = columns.map((column, idx) => {
+          if (idx === sourceColumnId) {
+            return {
+              ...column,
+              cards: column.cards.filter((card) => card.id !== id),
+            };
+          }
+          if (idx === destinationColumnId) {
+            return {
+              ...column,
+              cards: [
+                ...column.cards,
+                { ...updatedCard, columnId: columnId, order: order },
+              ].sort((a, b) => (a.order > b.order ? 1 : -1)),
+            };
+          }
+          return { ...column };
+        });
+
+        cache.writeQuery({
+          query: BoardSubscriptionQueryDocument,
+          data: { columns: res },
+        });
+      }
+    },
+  });
   const [editCardOrder, editCardOrderResult] = useEditCardOrderMutation({
     update(cache, result) {
       const originalData = cache.readQuery<BoardSubscriptionSubscription>({
@@ -119,12 +168,30 @@ export const Board = () => {
 
       const columnId = data?.columns[dInd].id;
       const cardId = data?.columns[sInd].cards[source.index]?.id;
+      const card = data?.columns[sInd].cards[source.index];
+      const updatedOrder = calculateCardOrderInColum(
+        cardsList,
+        destination.index
+      );
       if (cardsList && columnId && cardId) {
         editCardColumn({
           variables: {
             columnId: columnId,
             id: cardId,
-            order: calculateCardOrderInColum(cardsList, destination.index),
+            order: updatedOrder,
+          },
+          optimisticResponse: {
+            __typename: "mutation_root",
+            update_card: {
+              __typename: "card_mutation_response",
+              returning: [
+                {
+                  ...card,
+                  columnId: columnId,
+                  order: updatedOrder,
+                },
+              ],
+            },
           },
         });
       }

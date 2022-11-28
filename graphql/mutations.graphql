@@ -52,6 +52,11 @@ mutation EditCardColumn($id: uuid!, $columnId: uuid!, $order: float8!) {
     where: { id: { _eq: $id } }
     _set: { columnId: $columnId, order: $order }
   ) {
-    affected_rows
+    returning {
+      order
+      id
+      content
+      columnId
+    }
   }
 }
