@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import {
   DragDropContext,
   Droppable,
@@ -12,29 +11,68 @@ import {
   calculateCardOrderInColum,
   ORDER_THRESHOLD_NEW_VALUE,
 } from "./utils";
+
 import { Card } from "./Card";
 import { Column } from "./Column";
 import {
-  BoardSubscriptionDocument,
   BoardSubscriptionSubscription,
   useCreateCardMutation,
   useCreateColumnMutation,
   useDeleteCardMutation,
   useEditCardColumnMutation,
   useEditCardOrderMutation,
+  BoardSubscriptionQueryDocument,
 } from "../../graphql/generated/gql-types";
 
-import { useSubscription } from "@apollo/client";
+import { useHasuraSubscriptionWithCache } from "../../hooks/useSubscriptionWithCache";
 
 export const Board = () => {
-  const { loading, data, error } =
-    useSubscription<BoardSubscriptionSubscription>(BoardSubscriptionDocument);
+  const query = useHasuraSubscriptionWithCache<BoardSubscriptionSubscription>(
+    BoardSubscriptionQueryDocument
+  );
+  const data = query.data;
 
   const [createColumn, createColumnResult] = useCreateColumnMutation();
   const [createCard, createCardResult] = useCreateCardMutation();
   const [removeCard, removeCardResult] = useDeleteCardMutation();
   const [editCardColumn, editCardColumnResult] = useEditCardColumnMutation();
-  const [editCardOrder, editCardOrderResult] = useEditCardOrderMutation();
+  const [editCardOrder, editCardOrderResult] = useEditCardOrderMutation({
+    update(cache, result) {
+      const originalData = cache.readQuery<BoardSubscriptionSubscription>({
+        query: BoardSubscriptionQueryDocument,
+      });
+
+      if (
+        originalData?.columns &&
+        result.data?.update_card &&
+        result.data.update_card?.returning
+      ) {
+        const { id, columnId, order } = result.data?.update_card.returning[0];
+        cache.writeQuery({
+          query: BoardSubscriptionQueryDocument,
+          data: {
+            columns: originalData.columns.map((column) =>
+              column.id === columnId
+                ? {
+                    ...column,
+                    cards: column.cards
+                      .map((card) =>
+                        card.id === id
+                          ? {
+                              ...card,
+                              order: order,
+                            }
+                          : card
+                      )
+                      .sort((a, b) => (a.order > b.order ? 1 : -1)),
+                  }
+                : column
+            ),
+          },
+        });
+      }
+    },
+  });
 
   const onDragEnd = (result: DropResult) => {
     const { source, destination } = result;
@@ -55,6 +93,24 @@ export const Board = () => {
           variables: {
             id: data?.columns[sInd].cards[source.index].id,
             order: calculateOrder(cardsList, destination.index, cardOrder),
+          },
+          optimisticResponse: {
+            __typename: "mutation_root",
+            update_card: {
+              __typename: "card_mutation_response",
+              returning: [
+                {
+                  __typename: "card",
+                  ...data?.columns[sInd].cards[source.index],
+                  order: calculateOrder(
+                    cardsList,
+                    destination.index,
+                    cardOrder
+                  ),
+                  columnId: data?.columns[sInd].id,
+                },
+              ],
+            },
           },
         });
       }

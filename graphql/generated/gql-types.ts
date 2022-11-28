@@ -1026,7 +1026,7 @@ export type EditCardOrderMutationVariables = Exact<{
 }>;
 
 
-export type EditCardOrderMutation = { __typename?: 'mutation_root', update_card?: { __typename?: 'card_mutation_response', affected_rows: number } | null };
+export type EditCardOrderMutation = { __typename?: 'mutation_root', update_card?: { __typename?: 'card_mutation_response', returning: Array<{ __typename?: 'card', order?: any | null, id: any, content: string, columnId?: any | null }> } | null };
 
 export type EditCardColumnMutationVariables = Exact<{
   id: Scalars['uuid'];
@@ -1037,12 +1037,29 @@ export type EditCardColumnMutationVariables = Exact<{
 
 export type EditCardColumnMutation = { __typename?: 'mutation_root', update_card?: { __typename?: 'card_mutation_response', affected_rows: number } | null };
 
+export type BoardDataFragment = { __typename?: 'columns', name: string, id: any, cards: Array<{ __typename?: 'card', id: any, content: string, order?: any | null }> };
+
 export type BoardSubscriptionSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
 export type BoardSubscriptionSubscription = { __typename?: 'subscription_root', columns: Array<{ __typename?: 'columns', name: string, id: any, cards: Array<{ __typename?: 'card', id: any, content: string, order?: any | null }> }> };
 
+export type BoardSubscriptionQueryQueryVariables = Exact<{ [key: string]: never; }>;
 
+
+export type BoardSubscriptionQueryQuery = { __typename?: 'query_root', columns: Array<{ __typename?: 'columns', name: string, id: any, cards: Array<{ __typename?: 'card', id: any, content: string, order?: any | null }> }> };
+
+export const BoardDataFragmentDoc = gql`
+    fragment BoardData on columns {
+  name
+  id
+  cards(order_by: {order: asc}) {
+    id
+    content
+    order
+  }
+}
+    `;
 export const CreateColumnDocument = gql`
     mutation CreateColumn($name: String!) {
   insert_columns_one(object: {name: $name}) {
@@ -1248,7 +1265,12 @@ export type EditCardContentMutationOptions = Apollo.BaseMutationOptions<EditCard
 export const EditCardOrderDocument = gql`
     mutation EditCardOrder($id: uuid!, $order: float8!) {
   update_card(where: {id: {_eq: $id}}, _set: {order: $order}) {
-    affected_rows
+    returning {
+      order
+      id
+      content
+      columnId
+    }
   }
 }
     `;
@@ -1317,16 +1339,10 @@ export type EditCardColumnMutationOptions = Apollo.BaseMutationOptions<EditCardC
 export const BoardSubscriptionDocument = gql`
     subscription BoardSubscription {
   columns {
-    name
-    id
-    cards(order_by: {order: asc}) {
-      id
-      content
-      order
-    }
+    ...BoardData
   }
 }
-    `;
+    ${BoardDataFragmentDoc}`;
 
 /**
  * __useBoardSubscriptionSubscription__
@@ -1349,3 +1365,37 @@ export function useBoardSubscriptionSubscription(baseOptions?: Apollo.Subscripti
       }
 export type BoardSubscriptionSubscriptionHookResult = ReturnType<typeof useBoardSubscriptionSubscription>;
 export type BoardSubscriptionSubscriptionResult = Apollo.SubscriptionResult<BoardSubscriptionSubscription>;
+export const BoardSubscriptionQueryDocument = gql`
+    query BoardSubscriptionQuery {
+  columns {
+    ...BoardData
+  }
+}
+    ${BoardDataFragmentDoc}`;
+
+/**
+ * __useBoardSubscriptionQueryQuery__
+ *
+ * To run a query within a React component, call `useBoardSubscriptionQueryQuery` and pass it any options that fit your needs.
+ * When your component renders, `useBoardSubscriptionQueryQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useBoardSubscriptionQueryQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useBoardSubscriptionQueryQuery(baseOptions?: Apollo.QueryHookOptions<BoardSubscriptionQueryQuery, BoardSubscriptionQueryQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<BoardSubscriptionQueryQuery, BoardSubscriptionQueryQueryVariables>(BoardSubscriptionQueryDocument, options);
+      }
+export function useBoardSubscriptionQueryLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<BoardSubscriptionQueryQuery, BoardSubscriptionQueryQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<BoardSubscriptionQueryQuery, BoardSubscriptionQueryQueryVariables>(BoardSubscriptionQueryDocument, options);
+        }
+export type BoardSubscriptionQueryQueryHookResult = ReturnType<typeof useBoardSubscriptionQueryQuery>;
+export type BoardSubscriptionQueryLazyQueryHookResult = ReturnType<typeof useBoardSubscriptionQueryLazyQuery>;
+export type BoardSubscriptionQueryQueryResult = Apollo.QueryResult<BoardSubscriptionQueryQuery, BoardSubscriptionQueryQueryVariables>;

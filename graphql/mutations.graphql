@@ -38,7 +38,12 @@ mutation EditCardContent($id: uuid!, $content: String!) {
 
 mutation EditCardOrder($id: uuid!, $order: float8!) {
   update_card(where: { id: { _eq: $id } }, _set: { order: $order }) {
-    affected_rows
+    returning {
+      order
+      id
+      content
+      columnId
+    }
   }
 }
 
