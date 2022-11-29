@@ -38,7 +38,7 @@ export const Card = ({
       {...provided.dragHandleProps}
       className={`${
         snapshot.isDragging ? "bg-lime-300" : "bg-slate-50"
-      }  text-black  my-2 px-2 py-3  rounded-md flex justify-between text-lg shadow-md `}
+      }  text-black  my-2 px-2 py-5  rounded-md flex justify-between text-lg shadow-md `}
     >
       <div
         ref={contentDivRef}
