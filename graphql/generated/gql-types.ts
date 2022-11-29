@@ -1035,7 +1035,7 @@ export type EditCardColumnMutationVariables = Exact<{
 }>;
 
 
-export type EditCardColumnMutation = { __typename?: 'mutation_root', update_card?: { __typename?: 'card_mutation_response', returning: Array<{ __typename?: 'card', order?: any | null, id: any, content: string, columnId?: any | null }> } | null };
+export type EditCardColumnMutation = { __typename?: 'mutation_root', edit_card_column?: { __typename?: 'card_mutation_response', returning: Array<{ __typename?: 'card', order?: any | null, id: any, content: string, columnId?: any | null }> } | null };
 
 export type BoardDataFragment = { __typename?: 'columns', name: string, id: any, cards: Array<{ __typename?: 'card', id: any, content: string, order?: any | null }> };
 
@@ -1303,7 +1303,10 @@ export type EditCardOrderMutationResult = Apollo.MutationResult<EditCardOrderMut
 export type EditCardOrderMutationOptions = Apollo.BaseMutationOptions<EditCardOrderMutation, EditCardOrderMutationVariables>;
 export const EditCardColumnDocument = gql`
     mutation EditCardColumn($id: uuid!, $columnId: uuid!, $order: float8!) {
-  update_card(where: {id: {_eq: $id}}, _set: {columnId: $columnId, order: $order}) {
+  edit_card_column: update_card(
+    where: {id: {_eq: $id}}
+    _set: {columnId: $columnId, order: $order}
+  ) {
     returning {
       order
       id

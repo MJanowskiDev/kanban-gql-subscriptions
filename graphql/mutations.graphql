@@ -48,7 +48,7 @@ mutation EditCardOrder($id: uuid!, $order: float8!) {
 }
 
 mutation EditCardColumn($id: uuid!, $columnId: uuid!, $order: float8!) {
-  update_card(
+  edit_card_column: update_card(
     where: { id: { _eq: $id } }
     _set: { columnId: $columnId, order: $order }
   ) {

@@ -43,11 +43,11 @@ export const Board = () => {
 
       if (
         originalData?.columns &&
-        result.data?.update_card &&
-        result.data.update_card?.returning
+        result.data?.edit_card_column &&
+        result.data.edit_card_column?.returning
       ) {
         const columns = [...originalData?.columns];
-        const updatedCard = result.data?.update_card.returning[0];
+        const updatedCard = result.data?.edit_card_column.returning[0];
         const { columnId, order, id, content } = updatedCard;
         console.log(order, "order");
 
@@ -138,30 +138,34 @@ export const Board = () => {
       const cardOrder = data?.columns[sInd].cards[destination.index].order;
 
       if (cardsList) {
-        editCardOrder({
-          variables: {
-            id: data?.columns[sInd].cards[source.index].id,
-            order: calculateOrder(cardsList, destination.index, cardOrder),
-          },
-          optimisticResponse: {
-            __typename: "mutation_root",
-            update_card: {
-              __typename: "card_mutation_response",
-              returning: [
-                {
-                  __typename: "card",
-                  ...data?.columns[sInd].cards[source.index],
-                  order: calculateOrder(
-                    cardsList,
-                    destination.index,
-                    cardOrder
-                  ),
-                  columnId: data?.columns[sInd].id,
-                },
-              ],
+        const card = data?.columns[sInd].cards[source.index];
+        if (card) {
+          editCardOrder({
+            variables: {
+              id: data?.columns[sInd].cards[source.index].id,
+              order: calculateOrder(cardsList, destination.index, cardOrder),
             },
-          },
-        });
+            optimisticResponse: {
+              __typename: "mutation_root",
+              update_card: {
+                __typename: "card_mutation_response",
+                returning: [
+                  {
+                    __typename: "card",
+                    id: card?.id,
+                    order: calculateOrder(
+                      cardsList,
+                      destination.index,
+                      cardOrder
+                    ),
+                    columnId: data?.columns[sInd].id,
+                    content: card.content,
+                  },
+                ],
+              },
+            },
+          });
+        }
       }
     } else {
       const cardsList = data?.columns[dInd].cards.slice(0);
@@ -173,7 +177,7 @@ export const Board = () => {
         cardsList,
         destination.index
       );
-      if (cardsList && columnId && cardId) {
+      if (cardsList && columnId && cardId && card) {
         editCardColumn({
           variables: {
             columnId: columnId,
@@ -182,11 +186,13 @@ export const Board = () => {
           },
           optimisticResponse: {
             __typename: "mutation_root",
-            update_card: {
+            edit_card_column: {
               __typename: "card_mutation_response",
               returning: [
                 {
-                  ...card,
+                  __typename: "card",
+                  content: card.content,
+                  id: cardId,
                   columnId: columnId,
                   order: updatedOrder,
                 },
