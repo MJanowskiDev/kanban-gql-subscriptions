@@ -12,7 +12,7 @@ export default function Home() {
 
       <main>
         <h1 className="text-2xl ml-2 py-4">
-          Kanban board using GraphQL subscription
+          Kanban board using GraphQL subscriptions
         </h1>
         <Board />
       </main>
