@@ -6,10 +6,22 @@ import { split, HttpLink } from "@apollo/client";
 
 import { getMainDefinition } from "@apollo/client/utilities";
 
+if (!process.env.NEXT_PUBLIC_HASURA_GQL) {
+  throw Error("no gql url available");
+}
+
+if (!process.env.NEXT_PUBLIC_HASURA_GQL_WS) {
+  throw Error("no gql ws url  available");
+}
+
+if (!process.env.NEXT_PUBLIC_HASURA_ADMIN_KEY) {
+  throw Error("no gql admin key available");
+}
+
 const httpLink = new HttpLink({
   uri: process.env.NEXT_PUBLIC_HASURA_GQL,
   headers: {
-    "x-hasura-admin-secret": process.env.NEXT_PUBLIC_HASURA_ADMIN_KEY || "",
+    "x-hasura-admin-secret": process.env.NEXT_PUBLIC_HASURA_ADMIN_KEY,
   },
 });
 
@@ -17,11 +29,10 @@ const wsLink =
   typeof window !== "undefined"
     ? new GraphQLWsLink(
         createClient({
-          url: process.env.NEXT_PUBLIC_HASURA_GQL_WS || "",
+          url: process.env.NEXT_PUBLIC_HASURA_GQL_WS,
           connectionParams: {
             headers: {
-              "x-hasura-admin-secret":
-                process.env.NEXT_PUBLIC_HASURA_ADMIN_KEY || "",
+              "x-hasura-admin-secret": process.env.NEXT_PUBLIC_HASURA_ADMIN_KEY,
             },
           },
         })
