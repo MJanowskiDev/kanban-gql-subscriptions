@@ -230,7 +230,7 @@ export const Board = () => {
 
   return (
     <div>
-      <div style={{ display: "flex", overflow: "auto", width: "100vw" }}>
+      <div className="flex overflow-auto">
         <DragDropContext onDragEnd={onDragEnd}>
           {data?.columns.map((el, ind) => (
             <Droppable key={ind} droppableId={`${ind}`}>
@@ -239,7 +239,7 @@ export const Board = () => {
                   id={el.id}
                   handleAddItem={handleAddItem}
                   divRef={provided.innerRef}
-                  style={getListStyle(snapshot.isDraggingOver)}
+                  draggingOver={snapshot.isDraggingOver}
                   droppableProps={{ ...provided.droppableProps }}
                   name={el.name}
                 >

@@ -2,8 +2,6 @@ import { SyntheticEvent, useEffect, useRef } from "react";
 import { DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
 import { useEditCardContentMutation } from "../../graphql/generated/gql-types";
 
-import { getItemStyle } from "./utils";
-
 interface CardProps {
   provided: DraggableProvided;
   snapshot: DraggableStateSnapshot;
@@ -38,35 +36,26 @@ export const Card = ({
       ref={provided.innerRef}
       {...provided.draggableProps}
       {...provided.dragHandleProps}
-      style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
+      className={`${
+        snapshot.isDragging ? "bg-lime-300" : "bg-slate-50"
+      }  text-black  my-2 px-2 py-3  rounded-md flex justify-between text-lg shadow-md `}
     >
       <div
         ref={contentDivRef}
         contentEditable={true}
         onBlur={onBlurHandle}
-        style={{
-          display: "flex",
-          justifyContent: "space-around",
-          padding: "10px 4px",
-        }}
+        className="w-full mr-2 p-1"
       ></div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+
+      <button
+        type="button"
+        className="text-slate-500"
+        onClick={() => {
+          cardRemoveHandle(item.id);
         }}
       >
-        <small>{item.order}</small>
-        <button
-          type="button"
-          onClick={() => {
-            cardRemoveHandle(item.id);
-          }}
-        >
-          x
-        </button>
-      </div>
+        x
+      </button>
     </div>
   );
 };

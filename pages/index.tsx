@@ -11,6 +11,9 @@ export default function Home() {
       </Head>
 
       <main>
+        <h1 className="text-2xl ml-2 py-4">
+          Kanban board using GraphQL subscription
+        </h1>
         <Board />
       </main>
     </div>

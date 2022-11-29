@@ -13,7 +13,7 @@ export const Layout = ({ children }: LayoutProps) => {
       <div className="min-h-screen bg-gray-100/50 dark:bg-gray-900 dark:text-white  flex flex-col justify-between overflow-x-hidden">
         <div>
           <Header />
-          <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-2  bg-gray-100/50 dark:bg-gray-900">
+          <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-6  bg-gray-100/50 dark:bg-gray-900">
             {children}
           </div>
         </div>

@@ -14,7 +14,7 @@ import {
 
 interface ColumnProps {
   divRef: LegacyRef<HTMLDivElement>;
-  style: CSSProperties;
+  draggingOver: boolean;
   droppableProps: DroppableProvidedProps;
   children: ReactNode;
   id: string;
@@ -24,7 +24,7 @@ interface ColumnProps {
 
 export const Column = ({
   divRef,
-  style,
+  draggingOver,
   droppableProps,
   children,
   id,
@@ -54,35 +54,38 @@ export const Column = ({
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          padding: "16px",
-          background: "slategray",
-          border: "1px solid white",
-        }}
-      >
+      <div className="bg-gray-200 text-slate-800 p-2 m-2 rounded-md h-auto w-[250px] shadow-inner ">
+        <div className="flex  px-3 py-2 justify-between ">
+          <div
+            id="name"
+            contentEditable={true}
+            onBlur={onBlurHandle}
+            ref={nameDivRef}
+            className="text-xl font-bold"
+          ></div>
+          <button className="text-slate-400" onClick={removeColumnHandle}>
+            x
+          </button>
+        </div>
         <div
-          id="name"
-          contentEditable={true}
-          onBlur={onBlurHandle}
-          ref={nameDivRef}
-          style={{ fontSize: "20px", fontWeight: 700 }}
-        ></div>
-        <button onClick={removeColumnHandle}>x</button>
-      </div>
-      <div ref={divRef} style={style} {...droppableProps}>
-        {children}
-      </div>
-      <div>
-        <button
-          onClick={() => {
-            handleAddItem(id);
-          }}
+          ref={divRef}
+          className={`${
+            draggingOver ? "bg-gray-200 " : "bg-slate-400"
+          }w-full px-1 `}
+          {...droppableProps}
         >
-          Add
-        </button>
+          {children}
+        </div>
+        <div>
+          <button
+            className="pl-2 text-slate-400 w-full text-left"
+            onClick={() => {
+              handleAddItem(id);
+            }}
+          >
+            Add
+          </button>
+        </div>
       </div>
     </div>
   );
