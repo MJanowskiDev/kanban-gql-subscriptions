@@ -1,0 +1,59 @@
+{
+  "resource_version": 11,
+  "metadata": {
+    "version": 3,
+    "sources": [
+      {
+        "name": "default",
+        "kind": "postgres",
+        "tables": [
+          {
+            "table": {
+              "name": "card",
+              "schema": "public"
+            }
+          },
+          {
+            "table": {
+              "name": "columns",
+              "schema": "public"
+            },
+            "array_relationships": [
+              {
+                "name": "cards",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "columnId",
+                    "table": {
+                      "name": "card",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "configuration": {
+          "connection_info": {
+            "database_url": {
+              "from_env": "PG_DATABASE_URL"
+            },
+            "isolation_level": "read-committed",
+            "use_prepared_statements": false
+          }
+        },
+        "customization": {
+          "naming_convention": "hasura-default"
+        }
+      }
+    ],
+    "backend_configs": {
+      "dataconnector": {
+        "athena": {
+          "uri": "http://localhost:8081/api/v1/athena"
+        }
+      }
+    }
+  }
+}
