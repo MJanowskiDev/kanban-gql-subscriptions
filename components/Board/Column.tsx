@@ -54,7 +54,7 @@ export const Column = ({
 
   return (
     <div>
-      <div className="bg-gray-200 text-slate-800 p-2 m-2 rounded-md h-auto w-[250px] shadow-inner ">
+      <div className="bg-gray-200 text-slate-800 p-2 m-2 rounded-md h-auto  w-[250px] shadow-inner ">
         <div className="flex  px-3 py-2 justify-between ">
           <div
             id="name"
@@ -71,7 +71,7 @@ export const Column = ({
           ref={divRef}
           className={`${
             draggingOver ? "bg-gray-200 " : "bg-slate-400"
-          }w-full px-1 `}
+          }w-full px-1 min-h-[100px] `}
           {...droppableProps}
         >
           {children}
